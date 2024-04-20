@@ -26,7 +26,7 @@ if [ ! -d build ]; then
 fi
 
 cd build
-if [ $input_compile != "" ]; then
+if [ ! -z $input_compile ]; then
     cmake .. -DCMAKE_BUILD_TYPE=$input_mode -G $input_compile
 else
     cmake .. -DCMAKE_BUILD_TYPE=$input_mode

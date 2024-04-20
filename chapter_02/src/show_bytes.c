@@ -7,7 +7,7 @@ void show_bytes(bytes_pointer ptr, size_t len)
 {
     for (size_t i = 0; i < len; ++i)
     {
-        printf("%.2x ", ptr[i]);
+        printf("%.2x", ptr[i]);
     }
     printf("\n");
 }
