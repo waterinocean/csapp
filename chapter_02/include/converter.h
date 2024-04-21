@@ -16,6 +16,16 @@
 #include <algorithm>
 
 
+typedef char* bytes_pointer;
+void show_bytes(bytes_pointer start, size_t len)
+{
+    for (size_t i = 0; i < len; ++i)
+    {
+        printf("%2.2x, 0x%u\t", start[i], &start[i]);
+    }
+    printf("\n");
+}
+
 std::string toString(unsigned long long val, unsigned int type = 10)
 {
     static std::map<unsigned int, std::string> mapSupported = {{2, "0b"}, {8, "0"}, {10, ""}, {16, "0x"}};
