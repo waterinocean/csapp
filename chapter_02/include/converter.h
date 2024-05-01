@@ -1,12 +1,7 @@
 #ifndef CONVERTER_H
 #define CONVERTER_H
 
-#ifdef DEBUG
-#define DBGprint(...) printf(__VA_ARGS__)
-#else
-#define DBGprint(...)
-#endif
-
+#include "debug.h"
 #include <stdio.h>
 #include <string>
 #include <list>
