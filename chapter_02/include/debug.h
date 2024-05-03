@@ -2,7 +2,7 @@
 #define DEBUG_H
 
 #ifdef DEBUG
-#define DBGprint(...) printf(__VA_ARGS__); printf("\n")
+#define DBGprint(...) printf(__VA_ARGS__)
 #else
 #define DBGprint(...)
 #endif
