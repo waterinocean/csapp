@@ -12,7 +12,7 @@ void assignTo(long long val, char array[8])
         array[i] = tmp;
         val = val >> 8;
     }
-    show_bytes(array, 8);        
+    show_bytes((bytes_pointer)array, 8);        
 }
 
 long long getValueFrom(char array[8])
