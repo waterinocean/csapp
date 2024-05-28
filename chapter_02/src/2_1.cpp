@@ -13,10 +13,10 @@ std::array<char, 16> chars = { '0', '1', '2', '3',
 
 int main(void)
 {
-    printf("%s\n", convert_integer(0x9A78, 10).c_str());
-    printf("%s\n", convert_integer(0x9A78, 16).c_str());
-    printf("%s\n", convert_integer(0x9A78, 2).c_str());
-    printf("%s\n", convert_integer(0x39A7F8, 16).c_str());
+    printf("%s\n", convert_integer(0x39A7F8, 2).c_str());
+    printf("%s\n", convert_integer(0b1100100101111011, 16).c_str());
+    printf("%s\n", convert_integer(0xD5E4C, 2).c_str());
+    printf("%s\n", convert_integer(0b1001101110011110110101, 16).c_str());
     return 0;
 }
 

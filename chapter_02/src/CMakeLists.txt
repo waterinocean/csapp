@@ -22,4 +22,5 @@ add_executable(2_70 2_70.c)
 add_executable(2_73 2_73.c)
 add_executable(2_74 2_74.c)
 
-add_executable(p2_1 p2_1.cpp)
+add_executable(2_1 2_1.cpp)
+add_executable(2_12 2_12.cpp)
