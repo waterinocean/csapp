@@ -8,4 +8,6 @@ if(CMAKE_BUILD_TYPE STREQUAL Debug)
     add_definitions(-DDEBUG)
 endif()
 
+add_compile_options(-Wall -Wextra -Wpedantic -Wno-unused-parameter -g)
+
 add_subdirectory(chapter_02)

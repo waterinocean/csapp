@@ -2,215 +2,304 @@
 #include <cmath>
 #include <cstdlib>
 #include "../include/debug.h"
+#include "linteger.h"
 
-LInteger::LInteger(long long value)
+std::map<char, int> LInteger::m_mapNum =  {   
+                                                    {'0', 0},   {'1', 1},   {'2', 2},   {'3', 3},
+                                                    {'4', 4},   {'5', 5},   {'6', 6},   {'7', 7},
+                                                    {'8', 8},   {'9', 9},   {'A', 10},  {'B', 11},
+                                                    {'C', 12},  {'D', 13},  {'E', 14},  {'F', 15}
+                                                };
+std::map<int, char> LInteger::m_mapStr =  {   
+                                                    {0, '0'},   {1, '1'},   {2, '2'},   {3, '3'},
+                                                    {4, '4'},   {5, '5'},   {6, '6'},   {7, '7'},
+                                                    {8, '8'},   {9, '9'},   {10, 'A'},  {11, 'B'},
+                                                    {12, 'C'},  {13, 'D'},  {14, 'E'},  {15, 'F'}
+                                                };
+
+LInteger::LInteger(const std::string& value, int base/*=10*/)
+    : m_signed(false)
 {
-    m_value = value;
+    DBGprint("constructor: value[%s], base[%d]\n", value.c_str(), base);
+    init(value, base);
 }
 
-void LInteger::setValue(long long value)
+LInteger& LInteger::operator=(const LInteger &value)
 {
-    m_value = value;
+    m_number = value.m_number;
+    m_signed = value.m_signed;
+    return *this;
 }
 
-std::string LInteger::toDecimal(void)
+LInteger::LInteger(const LInteger &value)
 {
-    resetChars();
-    int i = 0;
-    long long value = m_value;
-    while (value > 0)
+    m_number = value.m_number;
+    m_signed = value.m_signed;
+}
+
+std::string LInteger::hex(void) const
+{
+    std::string result;
+    size_t sizeHex = m_number.size() / 4;
+    for (size_t i = 0; i < sizeHex; i++)
     {
-        int result = value % 10;
-        m_chars[i] = result;
-        i++;
-        value /= 10;
+        std::string hexStr;
+        hexStr += m_number[4 * i];
+        hexStr += m_number[4 * i + 1];
+        hexStr += m_number[4 * i + 2];
+        hexStr += m_number[4 * i + 3];
+        int index = binaryToDecimal(hexStr.c_str(), 4);
+        char hexC = m_mapStr[index];
+        result += hexC;
     }
-    m_len = i;
-    return toString();
+    
+    return result;
 }
 
-std::string LInteger::toHex(void)
+std::string LInteger::binary(void) const
 {
-    resetChars();
-    int i = 0;
-    long long value = m_value;
-    while (value > 0)
-    {
-        int result = value % 16;
-        m_chars[i] = result;
-        i++;
-        value /= 16;
-    }
-    m_len = i;
-    return toString();
+    return m_number;
 }
 
-std::string LInteger::toBinary(LType dataType, LCode code)
+long long LInteger::decimal(void)
 {
-    return toBinary(getLength(dataType), code);
+    long long result = 0;
+    std::string value = m_number;
+    if (m_littleEndian)
+    {
+        swapByte(value);
+    }
+    result = binaryToDecimal(value.c_str(), value.size(), m_signed);
+    return result;
 }
 
-std::string LInteger::toBinary(int length, LCode code)
+LInteger &LInteger::operator&(const LInteger &right)
 {
-    computeBinary(m_value, length, code);
-    return toString();
+    return *this;
 }
 
-void LInteger::computeBinary(long long value, int length, LCode code)
+LInteger &LInteger::operator|(const LInteger &right)
 {
-    DBGprint("start compute binary, value=%d, len=%d, code=%s\n", value, length, getCodeString(code).c_str());
-    resetChars();
-    m_len = length;
-    if (value > 0)
-    {
-        binaryForPositive(value);
-    }
-    else if (value == 0)
-    {
-        //no need to compute
-    }
-    else
-    {
-        binaryForNegative(value, code);
-    }
+    return *this;
 }
 
-int LInteger::getLength(LType dataType) const
+LInteger &LInteger::operator~(void)
 {
-    switch (dataType)
-    {
-        case LInt_4: return 4;
-        case LUInt_4: return 4;
-        case LInt_8: return 8;
-        case LUInt_8: return 8;
-        case LInt_16: return 16;
-        case LUInt_16: return 16;
-        case LInt_32: return 32;
-        case LUInt_32: return 32;
-        case LInt_64: return 64;
-        case LUInt_64: return 64;    
-        default:
-            throw "unsupport data type";
-            break;
-    }
+    return *this;
 }
 
-std::string LInteger::getCodeString(LCode code) const
+LInteger &LInteger::operator<<(size_t n)
 {
-    switch (code)
-    {
-        case LSign_Magnitude: return "Sign_Magnitude";
-        case LOne_Complement: return "One_Complement";
-        case LTwo_Complement: return "Two_Complement";
-        default: return "unknown";
-    }
+    return *this;
 }
 
-void LInteger::binaryForPositive(long long value)
+LInteger &LInteger::rightShiftInLogic(size_t n)
 {
-    int i = 0;
-    while (value > 0)
-    {
-        int result = value % 2;
-        m_chars[i] = result;
-        i++;
-        value /= 2;
-    }
+    return *this;
 }
 
-void LInteger::binaryForNegative(long long value, LCode code)
+LInteger &LInteger::rightShiftInArithMetic(size_t n)
 {
-    value = std::llabs(value);
-    int i = 0;
-    while (value > 0)
-    {
-        int result = value % 2;
-        m_chars[i] = result;
-        DBGprint("pos: %d, bit: %d\n", i, result);
-        i++;
-        value /= 2;
-    }
-    int signPos = getSignPos(i);
-    DBGprint("signPos: %d\n", signPos);
-    m_chars[signPos] = 1;
-    if (code == LSign_Magnitude)
+    return *this;
+}
+
+LInteger LInteger::B2U(const LInteger &val)
+{
+    return LInteger("0");
+}
+
+LInteger LInteger::B2T(const LInteger &val)
+{
+    return LInteger("0");
+}
+
+LInteger LInteger::U2B(const LInteger &val)
+{
+    return LInteger("0");
+}
+
+LInteger LInteger::U2T(const LInteger &val)
+{
+    return LInteger("0");
+}
+
+LInteger LInteger::T2U(const LInteger &val)
+{
+    return LInteger("0");
+}
+
+LInteger LInteger::T2B(const LInteger &val)
+{
+    return LInteger("0");
+}
+
+bool LInteger::m_littleEndian = false;
+void LInteger::setLittleEndian(bool littleEndian)
+{
+    m_littleEndian = littleEndian;
+}
+
+void LInteger::init(const std::string &value, int base)
+{
+    if (value.size() == 0)
     {
         return;
     }
-
-    if (code == LOne_Complement)
+    if (value[0] == '-')
     {
-        oneComplement(signPos);
+        m_signed = true;
     }
-    else if (code == LTwo_Complement)
+    unsigned long long number = toNumber(value, base);
+    DBGprint("init: number[%llu]\n", number);
+    m_number = toBinary(number);
+    DBGprint("init: binary[%s]\n", m_number.c_str());
+    fulfillByte(m_number, m_signed);
+    DBGprint("init: after fulfill8[%s]\n", m_number.c_str());
+    if (m_signed)
     {
-        twoComplement(signPos);
+        m_number[0] = '1';        
     }
-    for (size_t i = signPos; i < m_chars.size(); i++)
+    m_number = O2T(m_number);
+    DBGprint("init: O2T[%s]\n", m_number.c_str());
+    if (m_littleEndian)
     {
-        m_chars[i] = 1;
+        swapByte(m_number);
+        DBGprint("init: little endian[%s]\n", m_number.c_str());
     }
 }
 
-std::string LInteger::toString(void)
+long long LInteger::pow(int base, int n) const
 {
-    static std::array<char, 16> chars = {'0', '1', '2', '3', 
-                                        '4', '5', '6', '7',
-                                        '8', '9', 'A', 'B',
-                                        'C', 'D', 'E', 'F'};
-    std::string result;
-    for (int i = m_len - 1; i >= 0; i--)
+    long long result = 1;
+    if (n == 0)
     {
-        result.push_back(chars[m_chars[i]]);
+        return 1;
+    }
+    return base * pow(base, n - 1);
+}
+
+unsigned long long LInteger::toNumber(const std::string &str, int base)
+{
+    unsigned long long result = 0;
+    size_t size = str.size();
+    for (int i = 0, place = size - 1; i < size; ++i, --place)
+    {
+        if (str[i] == '-')
+        {
+            continue;
+        }
+        result += m_mapNum[str[i]] * pow(base, place);
     }
     return result;
 }
 
-void LInteger::resetChars(void)
+std::string LInteger::toBinary(unsigned long long number)
 {
-    for (int i = 0, size = m_chars.size(); i < size; ++i)
+    std::string result;
+    while (number > 0)
     {
-        m_chars[i] = 0;
+        char c = m_mapStr[number % 2];
+        result.push_back(c);
+        number /= 2;
+    }
+    swapBit(result);
+    return result;
+}
+
+void LInteger::swapBit(std::string &str)
+{
+    size_t size = str.size();
+    for (int head = 0, tail = size - 1; head < tail; ++head, --tail)
+    {
+        swap(str, head, tail);
     }
 }
 
-int LInteger::getSignPos(int len)
+void LInteger::swapByte(std::string &str)
 {
-    return (len/4 + 1) * 4 - 1;
-}
-
-void LInteger::oneComplement(int signPos)
-{
-    DBGprint("start one complement\n");
-    for (size_t i = 0; i < signPos; i++)
+    size_t sizeByte = str.size() / 8;
+    if (sizeByte == 1)
     {
-        m_chars[i] = (m_chars[i] == 0) ? 1 : 0;
-        DBGprint("pos: %d, bit: %d\n", i, m_chars[i]);
+        return;
     }
-}
-
-void LInteger::twoComplement(int signPos)
-{
-    oneComplement(signPos);
-    DBGprint("start two complement\n");
-    int result = 1;
-    int i = 0;
-    while (result > 0)
+    for (int head = 0, tail = sizeByte - 1; head < tail; ++head, --tail)
     {
-        if (m_chars[i] == 0)
+        for (size_t i = 0; i < 8; ++i)
         {
-            m_chars[i] = 1;
-            DBGprint("pos: %d, bit: %d\n", i, m_chars[i]);
+            swap(str, 8 * head + i, 8 * tail + i);
+        }
+    }
+}
 
-            result = 0;
+void LInteger::swap(std::string &str, int i, int j)
+{
+    char c = str[i];
+    str[i] = str[j];
+    str[j] = c;
+}
+
+void LInteger::fulfillByte(std::string &binary, bool isSigned)
+{
+    int numZero = 0;
+    size_t size = binary.size();
+    if (size % 8 == 0)
+    {
+        if (isSigned)
+        {
+            numZero = 8;
+        }
+    }
+    else
+    {
+        numZero = 8 - (size % 8);
+    }
+
+    std::string fulfilled(numZero, '0');
+    binary = fulfilled + binary;
+}
+
+std::string LInteger::O2T(const std::string& binary)
+{
+    std::string result = binary;
+    if (result[0] == '0')
+    {
+        return result;
+    }
+    for (int i = 1; i < result.size(); ++i)
+    {
+        if (result[i] == '1')
+        {
+            result[i] = '0';
         }
         else
         {
-            m_chars[i] = 0;
-            DBGprint("pos: %d, bit: %d\n", i, m_chars[i]);
-
-            result = 1;
-            ++i;
+            result[i] = '1';
         }
     }
+    for (int i = result.size() - 1; i >= 1; --i)
+    {
+        if (result[i] == '0')
+        {
+            result[i] = '1';
+            break;
+        }
+        result[i] = '0';
+    }
+    return result;
+}
+
+long long LInteger::binaryToDecimal(const char *byte, size_t size, bool isSigned/* = false*/) const
+{
+    long long result = 0;
+    int sign = isSigned ? -1 : 1;
+    for (size_t i = 0, place = size - 1; i < size; ++i, --place)
+    {
+        if (i == 0)
+        {
+            result += sign * m_mapNum[byte[i]] * pow(2, place);
+            continue;
+        }
+        result += m_mapNum[byte[i]] * pow(2, place);
+    }
+    return result;
 }

@@ -2,7 +2,7 @@
 #define DEBUG_H
 
 #ifdef DEBUG
-#define DBGprint(...) printf(__VA_ARGS__)
+#define DBGprint(...) printf("%s[%d] - %s:", __FILE__, __LINE__, __FUNCTION__); printf(__VA_ARGS__)
 #else
 #define DBGprint(...)
 #endif

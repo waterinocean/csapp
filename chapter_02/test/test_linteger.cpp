@@ -4,32 +4,47 @@
 
 using namespace std;
 
-TEST_CASE("positive")
+TEST_CASE("constructor")
 {
-    LInteger integer(6);
-    REQUIRE(string("0110") == integer.toBinary(4, LInteger::LSign_Magnitude));
-    REQUIRE(string("0110") == integer.toBinary(4, LInteger::LOne_Complement));
-    REQUIRE(string("0110") == integer.toBinary(4, LInteger::LTwo_Complement));
+    LInteger::setLittleEndian(false);
+    LInteger integer("6");
+    REQUIRE("06" == integer.hex());
+    REQUIRE("00000110" == integer.binary());
+
+    integer = LInteger("-122");
+    REQUIRE("86" == integer.hex());
+    REQUIRE("10000110" == integer.binary());
 }
 
-TEST_CASE("negative")
+TEST_CASE("little-endian")
 {
-    LInteger integer(-6);
-    REQUIRE(string("1110") == integer.toBinary(4, LInteger::LSign_Magnitude));
-    REQUIRE(string("1001") == integer.toBinary(4, LInteger::LOne_Complement));
-    REQUIRE(string("1010") == integer.toBinary(4, LInteger::LTwo_Complement));
-
-    REQUIRE(string("11111010") == integer.toBinary(8, LInteger::LTwo_Complement));
+    LInteger::setLittleEndian(true);
+    LInteger integer("6000");
+    REQUIRE("7017" == integer.hex());
 }
 
 TEST_CASE("decimal")
 {
-    LInteger integer(50);
-    REQUIRE(string("50") == integer.toDecimal());
+    LInteger::setLittleEndian(false);
+    LInteger integer("10");
+    REQUIRE(10 == integer.decimal());
+    REQUIRE("0A" == integer.hex());
+    REQUIRE("00001010" == integer.binary());
+
+    integer = LInteger("-10");
+    REQUIRE(-10 == integer.decimal());
+    REQUIRE("F6" == integer.hex());
+    REQUIRE("11110110" == integer.binary());
 }
 
 TEST_CASE("hex")
 {
-    LInteger integer(50);
-    REQUIRE(string("32") == integer.toHex());
+    LInteger::setLittleEndian(false);
+}
+
+TEST_CASE("binary")
+{
+    LInteger::setLittleEndian(false);
+    LInteger integer("39A7F8", 16);
+    REQUIRE("001110011010011111111000" == integer.binary());
 }
